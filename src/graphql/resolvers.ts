@@ -22,7 +22,7 @@ const resolvers = {
             }`;
 
             try {
-                const response = await axios.post('https://rickandmortyapi.com/graphql', { query });
+                const response = await axios.post('https://rickandmortyapi.com/graphql', {query});
                 return response.data.data.characters.results;
             } catch (error) {
                 console.error("Error fetching characters:", error);
@@ -37,7 +37,28 @@ const resolvers = {
                 console.error("Error fetching episodes:", error);
                 return [];
             }
+        },
+
+        rickAndMortyAssociations: async () => {
+            const ricks = await resolvers.Query.charactersByName(null, {name: "Rick"});
+            const morties = await resolvers.Query.charactersByName(null, {name: "Morty"});
+
+            return ricks.map((rick: any) => {
+                const associatedMorties = morties.filter((morty: any) => {
+                    const commonEpisodes = morty.episode.filter((mortyEpisode: any) =>
+                        rick.episode.some((rickEpisode: any) => rickEpisode.id === mortyEpisode.id)
+                    );
+                    // This is a simple heuristic. You can adjust the logic as needed.
+                    return commonEpisodes.length > 2;
+                });
+
+                return {
+                    rick,
+                    morties: associatedMorties
+                };
+            });
         }
+
     }
 };
 

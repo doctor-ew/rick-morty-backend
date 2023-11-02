@@ -18,3 +18,12 @@ type Query {
     charactersByName(name: String!): [Character]
     episodesByIds(ids: [ID!]!): [Episode]
 }
+
+type RickAndMortyAssociation {
+    rick: Character!
+    morties: [Character!]!
+}
+
+extend type Query {
+    rickAndMortyAssociations: [RickAndMortyAssociation!]!
+}
