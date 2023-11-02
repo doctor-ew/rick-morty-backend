@@ -2,7 +2,18 @@ import axios from 'axios';
 
 const resolvers = {
     Query: {
-        charactersByName: async (_: any, args: { name: string }) => {
+
+        charactersByName: async (_: any, args: { name: string }, context: any) => {
+            context.cacheControl.setCacheHint({maxAge: 360, scope: 'PRIVATE'});
+            const cache = context.cache;
+            const cacheKey = `charactersByName:${args.name}`;
+            const cachedData = await cache.get(cacheKey);
+
+            if (cachedData) {
+                return cachedData;
+            }
+
+
             const query = `
             {
                 characters(filter: {name: "${args.name}"}) {
@@ -23,7 +34,12 @@ const resolvers = {
 
             try {
                 const response = await axios.post('https://rickandmortyapi.com/graphql', {query});
-                return response.data.data.characters.results;
+
+                let responseData = response.data.data.characters.results;
+                await cache.set(cacheKey, responseData, {ttl: 5});
+
+
+                return responseData;
             } catch (error) {
                 console.error("Error fetching characters:", error);
                 return [];
@@ -39,9 +55,9 @@ const resolvers = {
             }
         },
 
-        rickAndMortyAssociations: async () => {
-            const ricks = await resolvers.Query.charactersByName(null, {name: "Rick"});
-            const morties = await resolvers.Query.charactersByName(null, {name: "Morty"});
+        rickAndMortyAssociations: async (_: any, _args: any, context: any) => {
+            const ricks = await resolvers.Query.charactersByName(_, {name: "Rick"}, context);
+            const morties = await resolvers.Query.charactersByName(_, {name: "Morty"}, context);
 
             return ricks.map((rick: any) => {
                 const associatedMorties = morties.filter((morty: any) => {
