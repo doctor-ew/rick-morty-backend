@@ -1,9 +1,9 @@
 const AWS = require('aws-sdk');
 const athena = new AWS.Athena();
 
-const resolvers = {
+const travelDataResolvers = {
     Query: {
-        reservations: async (_, { limit = 10 }) => {
+        reservations: async (_:any, { limit = 10 }) => {
             const params = {
                 QueryString: `SELECT * FROM your_table_name LIMIT ${limit}`,
                 QueryExecutionContext: {
@@ -19,3 +19,4 @@ const resolvers = {
         }
     }
 };
+export default travelDataResolvers;

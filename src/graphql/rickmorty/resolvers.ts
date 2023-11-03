@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const resolvers = {
+const rickMortyResolvers = {
     Query: {
 
         charactersByName: async (_: any, args: { name: string }, context: any) => {
@@ -56,8 +56,8 @@ const resolvers = {
         },
 
         rickAndMortyAssociations: async (_: any, _args: any, context: any) => {
-            const ricks = await resolvers.Query.charactersByName(_, {name: "Rick"}, context);
-            const morties = await resolvers.Query.charactersByName(_, {name: "Morty"}, context);
+            const ricks = await rickMortyResolvers.Query.charactersByName(_, {name: "Rick"}, context);
+            const morties = await rickMortyResolvers.Query.charactersByName(_, {name: "Morty"}, context);
 
             return ricks.map((rick: any) => {
                 const associatedMorties = morties.filter((morty: any) => {
@@ -78,4 +78,4 @@ const resolvers = {
     }
 };
 
-export default resolvers
+export default rickMortyResolvers
