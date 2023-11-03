@@ -1,0 +1,14 @@
+type Reservation {
+    Booking_ID: ID!
+    no_of_adults: Int
+    no_of_children: Int
+    arrival_year: Int
+    arrival_month: String
+    arrival_date: Int
+    avg_price_per_room: Float
+    booking_status: String
+}
+
+type Query {
+    reservations(limit: Int): [Reservation]
+}

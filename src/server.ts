@@ -1,24 +1,28 @@
-import express, {Express} from 'express';
-import {ApolloServer} from 'apollo-server-express';
-import {readFileSync} from 'fs';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import { readFileSync } from 'fs';
 import path from 'path';
-import resolvers from './graphql/resolvers';
-import {RedisCache} from 'apollo-server-cache-redis';
+import rickMortyResolvers from './graphql/rickmorty/resolvers';
+import travelDataResolvers from './graphql/traveldata/resolvers';
+import { RedisCache } from 'apollo-server-cache-redis';
 
-const app: Express = express();
+const app: express.Application = express();
 const PORT = 4000;
 
-// Load the schema from the schema.graphql file
-const typeDefs = readFileSync(path.join(__dirname, 'graphql/schema.graphql'), 'utf-8');
+// Load type definitions for both endpoints
+const rickMortyTypeDefs = readFileSync(path.join(__dirname, 'graphql/rickmorty/schema.graphql'), 'utf-8');
+const travelDataTypeDefs = readFileSync(path.join(__dirname, 'graphql/traveldata/schema.graphql'), 'utf-8');
 
-const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+
+// Create ApolloServer instances for both endpoints
+const rickMortyServer = new ApolloServer({
+    typeDefs: rickMortyTypeDefs,
+    resolvers: rickMortyResolvers,
     cache: new RedisCache({
         host: 'localhost',
         port: 6379
     }),
-    context: ({req, res}) => ({
+    context: ({ req, res }) => ({
         req,
         res,
         cache: new RedisCache({
@@ -28,15 +32,41 @@ const server = new ApolloServer({
     })
 });
 
+const travelDataServer = new ApolloServer({
+    typeDefs: travelDataTypeDefs,
+    resolvers: travelDataResolvers,
+    cache: new RedisCache({
+        host: 'localhost',
+        port: 6379
+    }),
+    context: ({ req, res }) => ({
+        req,
+        res,
+        cache: new RedisCache({
+            host: 'localhost',
+            port: 6379
+        })
+    })
+});
 
-// Create an asynchronous function to start the server and apply middleware
+// Create an asynchronous function to start the servers and apply middleware
 async function startServer() {
-    await server.start();
-    server.applyMiddleware({app: app as any});
+    await rickMortyServer.start();
+    rickMortyServer.applyMiddleware({ app, path: '/rickmorty' });
+
+    await travelDataServer.start();
+    travelDataServer.applyMiddleware({ app, path: '/traveldata' });
 
     app.listen(PORT, () => {
-        console.log(`Server is running at http://localhost:${PORT}${server.graphqlPath}`);
+        console.log(`Rick and Morty GraphQL API available at http://localhost:${PORT}${rickMortyServer.graphqlPath}`);
+        console.log(`Travel Data GraphQL API available at http://localhost:${PORT}${travelDataServer.graphqlPath}`);
     });
+
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        console.error(err.stack);
+        res.status(500).send('Something broke!');
+    });
+
 }
 
 // Call the asynchronous function

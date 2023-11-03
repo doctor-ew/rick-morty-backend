@@ -2,11 +2,11 @@
 
 import { ApolloServer } from 'apollo-server-express';
 import { RedisCache } from 'apollo-server-cache-redis';
-import resolvers from '../src/graphql/resolvers';
+import resolvers from '../src/graphql/rickmorty/resolvers';
 import axios from 'axios';
 import { mocked } from 'ts-jest/utils';
 import gql from 'graphql-tag';
-import schemaString from '../src/graphql/schema.graphql';
+import schemaString from '../src/graphql/rickmorty/schema.graphql';
 
 const typeDefs = gql`${schemaString}`;
 
