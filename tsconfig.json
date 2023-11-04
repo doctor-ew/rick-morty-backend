@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "types": ["@graphql-typed-document-node/core"]
+    "types": ["jest","@graphql-typed-document-node/core"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

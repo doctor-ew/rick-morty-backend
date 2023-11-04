@@ -47,7 +47,7 @@ async function startQueryExecution(query: string): Promise<StartQueryExecutionOu
     const params: AWS.Athena.StartQueryExecutionInput = {
         QueryString: query,
         QueryExecutionContext: {
-            Database: 'your_database_name', // Replace with your actual database name
+            Database: 'doctorew-travel-dataset-arg', // Replace with your actual database name
         },
         ResultConfiguration: {
             OutputLocation: 's3://doctorew-dataset-traveltrends-output/', // Replace with your actual output location
@@ -107,14 +107,17 @@ function getQueryResults(queryExecutionId: string): Promise<QueryExecutionResult
             athena.getQueryExecution({ QueryExecutionId: queryExecutionId }).promise()
                 .then((queryInfo: AWS.Athena.GetQueryExecutionOutput) => {
                     if (queryInfo.QueryExecution?.Status?.State === 'SUCCEEDED') {
+                        console.log('|-o-| athena',athena);
                         athena.getQueryResults(params).promise()
                             .then((result: AWS.Athena.GetQueryResultsOutput) => {
+                                console.log('|-o-| result',result);
                                 if (!result.ResultSet) {
                                     throw new Error('ResultSet is undefined');
                                 }
                                 resolve(result as unknown as QueryExecutionResult);
                             }).catch(reject);
                     } else if (queryInfo.QueryExecution?.Status?.State === 'FAILED' || queryInfo.QueryExecution?.Status?.State === 'CANCELLED') {
+                        console.log('|-o-|',queryInfo);
                         reject(new Error(`Query failed to run with state: ${queryInfo.QueryExecution?.Status?.State}`));
                     } else {
                         // If the query is still running, check again after some time
@@ -141,11 +144,15 @@ const travelDataResolvers = {
     Query: {
         bookings: async (): Promise<Booking[]> => {
             try {
-                const startQueryResponse = await startQueryExecution('SELECT * FROM "your_table_name" limit 10'); // Replace with your actual table name
+                const startQueryResponse = await startQueryExecution('SELECT * FROM "doctorew_dataset_traveltrends" WHERE no_of_adults IS NOT NULL limit 10');
+
+
+
                 const queryExecutionId = startQueryResponse.QueryExecutionId;
                 const results = await getQueryResults(queryExecutionId);
                 return results.ResultSet.Rows.slice(1).map(row => {
                     const columns = row.Data.map(column => column.VarCharValue);
+                    console.log('|-o-| columns',columns);
                     return {
                         bookingId: columns[0]!,
                         noOfAdults: parseInt(columns[1]!),
@@ -175,7 +182,7 @@ const travelDataResolvers = {
         },
         bookingById: async (_: any, { id }: { id: string }): Promise<Booking | null> => {
             try {
-                const startQueryResponse = await startQueryExecution(`SELECT * FROM "your_table_name" WHERE booking_id = '${id}'`); // Replace with your actual table name
+                const startQueryResponse = await startQueryExecution(`SELECT * FROM "doctorew_dataset_traveltrends" WHERE booking_id = '${id}'`); // Replace with your actual table name
                 const queryExecutionId = startQueryResponse.QueryExecutionId;
                 const result = await getQueryResults(queryExecutionId);
                 const row = result.ResultSet.Rows[1]; // Skip header row and get the first result
@@ -206,7 +213,7 @@ const travelDataResolvers = {
                 };
             } catch (error) {
                 console.error('Error in bookingById resolver:', error);
-                throw new Error('Error fetching booking by ID);
+                throw new Error('Error fetching booking by ID');
             }
         },
 

@@ -4,40 +4,44 @@ const rickMortyResolvers = {
     Query: {
 
         charactersByName: async (_: any, args: { name: string }, context: any) => {
-            context.cacheControl.setCacheHint({maxAge: 360, scope: 'PRIVATE'});
             const cache = context.cache;
+            if (context.cacheControl) {
+                context.cacheControl.setCacheHint({maxAge: 360, scope: 'PRIVATE'});
+            }
+
             const cacheKey = `charactersByName:${args.name}`;
             const cachedData = await cache.get(cacheKey);
 
             if (cachedData) {
-                return cachedData;
+                // Deserialize the data when retrieving it from the cache
+                return JSON.parse(cachedData);
             }
 
-
             const query = `
-            {
-                characters(filter: {name: "${args.name}"}) {
-                    results {
-                        id
-                        name
-                        status
-                        species
-                        type
-                        gender
-                        image
-                        episode {
-                            id
-                        }
-                    }
+    {
+        characters(filter: {name: "${args.name}"}) {
+            results {
+                id
+                name
+                status
+                species
+                type
+                gender
+                image
+                episode {
+                    id
+                    name
                 }
-            }`;
+            }
+        }
+    }`;
 
             try {
                 const response = await axios.post('https://rickandmortyapi.com/graphql', {query});
 
                 let responseData = response.data.data.characters.results;
-                await cache.set(cacheKey, responseData, {ttl: 5});
-
+                // Serialize the data before storing it in the cache
+                await cache.set(cacheKey, JSON.stringify(responseData), {ttl: 5});
 
                 return responseData;
             } catch (error) {
@@ -45,6 +49,7 @@ const rickMortyResolvers = {
                 return [];
             }
         },
+
         episodesByIds: async (_: any, args: { ids: number[] }) => {
             try {
                 const response = await axios.get(`https://rickandmortyapi.com/api/episode/${args.ids.join(',')}`);
@@ -58,7 +63,7 @@ const rickMortyResolvers = {
         rickAndMortyAssociations: async (_: any, _args: any, context: any) => {
             const ricks = await rickMortyResolvers.Query.charactersByName(_, {name: "Rick"}, context);
             const morties = await rickMortyResolvers.Query.charactersByName(_, {name: "Morty"}, context);
-
+            console.log('|-o-| Ricks:',ricks, '|-o-| Morties:', morties);
             return ricks.map((rick: any) => {
                 const associatedMorties = morties.filter((morty: any) => {
                     const commonEpisodes = morty.episode.filter((mortyEpisode: any) =>
