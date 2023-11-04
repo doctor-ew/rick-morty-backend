@@ -1,14 +1,28 @@
-type Reservation {
-    Booking_ID: ID!
-    no_of_adults: Int
-    no_of_children: Int
-    arrival_year: Int
-    arrival_month: String
-    arrival_date: Int
-    avg_price_per_room: Float
-    booking_status: String
-}
+# src/graphql/types.graphql
 
 type Query {
-    reservations(limit: Int): [Reservation]
+    bookings: [Booking]
+    bookingById(id: String!): Booking
+}
+
+type Booking {
+    bookingId: String!
+    noOfAdults: Int
+    noOfChildren: Int
+    noOfWeekendNights: Int
+    noOfWeekNights: Int
+    typeOfMealPlan: String
+    requiredCarParkingSpace: Boolean
+    roomTypeReserved: String
+    leadTime: Int
+    arrivalYear: Int
+    arrivalMonth: Int
+    arrivalDate: Int
+    marketSegmentType: String
+    repeatedGuest: Boolean
+    noOfPreviousCancellations: Int
+    noOfPreviousBookingsNotCanceled: Int
+    avgPricePerRoom: Float
+    noOfSpecialRequests: Int
+    bookingStatus: String
 }

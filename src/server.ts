@@ -19,14 +19,14 @@ const rickMortyServer = new ApolloServer({
     typeDefs: rickMortyTypeDefs,
     resolvers: rickMortyResolvers,
     cache: new RedisCache({
-        host: 'localhost',
+        host: 'redis',
         port: 6379
     }),
     context: ({ req, res }) => ({
         req,
         res,
         cache: new RedisCache({
-            host: 'localhost',
+            host: 'redis',
             port: 6379
         })
     })
@@ -36,14 +36,14 @@ const travelDataServer = new ApolloServer({
     typeDefs: travelDataTypeDefs,
     resolvers: travelDataResolvers,
     cache: new RedisCache({
-        host: 'localhost',
+        host: 'redis',
         port: 6379
     }),
     context: ({ req, res }) => ({
         req,
         res,
         cache: new RedisCache({
-            host: 'localhost',
+            host: 'redis',
             port: 6379
         })
     })
@@ -52,10 +52,10 @@ const travelDataServer = new ApolloServer({
 // Create an asynchronous function to start the servers and apply middleware
 async function startServer() {
     await rickMortyServer.start();
-    rickMortyServer.applyMiddleware({ app, path: '/rickmorty' });
+    rickMortyServer.applyMiddleware({ app: app as any, path: '/rickmorty' });
 
     await travelDataServer.start();
-    travelDataServer.applyMiddleware({ app, path: '/traveldata' });
+    travelDataServer.applyMiddleware({ app: app as any, path: '/traveldata' });
 
     app.listen(PORT, () => {
         console.log(`Rick and Morty GraphQL API available at http://localhost:${PORT}${rickMortyServer.graphqlPath}`);

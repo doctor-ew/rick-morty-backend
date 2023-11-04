@@ -32,6 +32,28 @@ Run the tests using:
 
     npm test
 
+## Booking Schema
+
+- `bookingId` (String!): Unique identifier for the booking.
+- `noOfAdults` (Int): Number of adults.
+- `noOfChildren` (Int): Number of children.
+- `noOfWeekendNights` (Int): Number of weekend nights.
+- `noOfWeekNights` (Int): Number of week nights.
+- `typeOfMealPlan` (String): Type of meal plan.
+- `requiredCarParkingSpace` (Boolean): Whether a car parking space is required.
+- `roomTypeReserved` (String): Type of room reserved.
+- `leadTime` (Int): Lead time for the booking.
+- `arrivalYear` (Int): Year of arrival.
+- `arrivalMonth` (Int): Month of arrival.
+- `arrivalDate` (Int): Date of arrival.
+- `marketSegmentType` (String): Market segment type.
+- `repeatedGuest` (Boolean): Whether the guest is a repeated guest.
+- `noOfPreviousCancellations` (Int): Number of previous cancellations.
+- `noOfPreviousBookingsNotCanceled` (Int): Number of previous bookings not canceled.
+- `avgPricePerRoom` (Float): Average price per room.
+- `noOfSpecialRequests` (Int): Number of special requests.
+- `bookingStatus` (String): Booking status.
+
 
 ### API Endpoints
 /graphql: The main GraphQL endpoint.
